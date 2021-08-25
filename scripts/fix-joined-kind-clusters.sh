@@ -30,11 +30,6 @@ set -o pipefail
 # components run in-memory by local e2e tests.
 LOCAL_TESTING="${LOCAL_TESTING:-}"
 
-if [ "`uname`" != 'Darwin' ]; then
-  >&2 echo "This script is only intended for use on MacOS"
-  exit 1
-fi
-
 NS="${KUBEFED_NAMESPACE:-kube-federation-system}"
 
 INSPECT_PATH='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
@@ -45,7 +40,8 @@ do
   if [[ "${LOCAL_TESTING}" ]]; then
     ENDPOINT="$(kubectl config view -o jsonpath='{.clusters[?(@.name == "'"${cluster}"'")].cluster.server}')"
   else
-    IP_ADDR="$(docker inspect -f "${INSPECT_PATH}" "${cluster}-control-plane")"
+    sanitized_cluster="$(echo $cluster | sed "s/^kind-//")"
+    IP_ADDR="$(docker inspect -f "${INSPECT_PATH}" "${sanitized_cluster}-control-plane")"
     ENDPOINT="https://${IP_ADDR}:6443"
   fi
   kubectl patch kubefedclusters -n "${NS}" "${cluster}" --type merge \
