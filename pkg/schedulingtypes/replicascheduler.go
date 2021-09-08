@@ -51,6 +51,8 @@ func init() {
 	}
 	RegisterSchedulingType("deployments.apps", schedulingType)
 	RegisterSchedulingType("replicasets.apps", schedulingType)
+	RegisterSchedulingType("statefulsets.apps", schedulingType)
+	RegisterSchedulingType("lrps.eirini.cloudfoundry.org", schedulingType)
 }
 
 type ReplicaScheduler struct {
@@ -176,10 +178,10 @@ func (s *ReplicaScheduler) Reconcile(obj runtimeclient.Object, qualifiedName ctl
 	}
 
 	kind := rsp.Spec.TargetKind
-	if kind != "FederatedDeployment" && kind != "FederatedReplicaSet" {
-		runtime.HandleError(errors.Wrapf(err, "RSP target kind: %s is incorrect", kind))
-		return ctlutil.StatusNeedsRecheck
-	}
+	// if kind != "FederatedDeployment" && kind != "FederatedReplicaSet" {
+	// 	runtime.HandleError(errors.Wrapf(err, "RSP target kind: %s is incorrect", kind))
+	// 	return ctlutil.StatusNeedsRecheck
+	// }
 
 	plugin, ok := s.plugins.Get(kind)
 	if !ok {
